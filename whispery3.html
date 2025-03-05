@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--
+        _____
+      .-'.  ':'-.
+    .''::: .:    '.
+   /   :::::'      \
+  ;.    ':' `       ;
+  |       '..       |
+  ; '      ::::.    ;
+   \       '::::   /
+    '.      :::  .'
+      '-.___'_.-'
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whispery 3 (there ain't 1 and 2) - Voice Messer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #88498f;    /* Deep purple */
+            --secondary: #779fa1;   /* Teal gray */
+            --success: #e0cba8;    /* Light beige */
+            --danger: #ff6542;     /* Vibrant orange */
+            --dark: #564154;       /* Dark purple-gray */
+            --bg-dark: #2e2532;    /* Derived darker background */
+            --text-light: #f0ece2; /* Derived light text */
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--dark) 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            background: rgba(86, 65, 84, 0.95); /* Using --dark with transparency */
+            border-radius: 15px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            position: relative;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(136, 73, 143, 0.3);
+        }
+
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            border: none;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn:hover::after {
+            width: 200%;
+            height: 200%;
+        }
+
+        .btn-primary { background-color: var(--primary); }
+        .btn-success { background-color: var(--success); }
+        .btn-danger { background-color: var(--danger); }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .recording-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: var(--danger);
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: pulse 1s infinite;
+            vertical-align: middle;
+            box-shadow: 0 0 8px var(--danger);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .waveform-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            height: 150px;
+            margin: 2rem 0;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .waveform-bar {
+            position: absolute;
+            bottom: 0;
+            width: 2px;
+            background: var(--primary);
+            transition: height 0.05s ease;
+            box-shadow: 0 0 5px var(--primary);
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(136, 73, 143, 0.3); /* Using --primary */
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); opacity: 0.5; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+
+        .credit {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .credit a {
+            color: var(--secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .credit a:hover {
+            color: var(--primary);
+            text-shadow: 0 0 5px rgba(136, 73, 143, 0.5);
+        }
+
+        .credit img {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            vertical-align: middle;
+            transition: transform 0.3s ease;
+        }
+
+        .credit a:hover img {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="container text-center">
+        <h1>Whispery 3</h1>
+        <div class="subtitle">(there ain't 1 and 2) - Voice Messer</div>
+        <div class="button-group">
+            <button id="recordBtn" class="btn btn-danger">Record (3s)</button>
+            <span class="recording-indicator" style="display: none;"></span>
+            <button id="whisperBtn" class="btn btn-primary" disabled>Process Audio</button>
+            <button id="saveBtn" class="btn btn-success" disabled>Download</button>
+        </div>
+        <div class="waveform-container" id="waveform"></div>
+        <div class="credit">
+            <a href="https://yunusemrevurgun.com/" target="_blank">
+                <img src="https://yunusemrevurgun.com/assets/images/earth.jpg" alt="Earth Icon">
+                Created by Yµn ^…^ ƒ(x)
+            </a>
+        </div>
+    </div>
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioBlob;
+        let transformedAudioBlob;
+        let analyser;
+        let audioContext;
+
+        const recordBtn = document.getElementById('recordBtn');
+        const whisperBtn = document.getElementById('whisperBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const waveform = document.getElementById('waveform');
+        const indicator = document.querySelector('.recording-indicator');
+
+        // Record audio
+        recordBtn.onclick = async () => {
+            if (mediaRecorder?.state === 'recording') {
+                mediaRecorder.stop();
+                indicator.style.display = 'none';
+                recordBtn.textContent = 'Record (3s)';
+                recordBtn.classList.replace('btn-secondary', 'btn-danger');
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    whisperBtn.disabled = false;
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                indicator.style.display = 'inline-block';
+                recordBtn.textContent = 'Stop';
+                recordBtn.classList.replace('btn-danger', 'btn-secondary');
+                whisperBtn.disabled = true;
+                saveBtn.disabled = true;
+
+                setTimeout(() => {
+                    if (mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                        indicator.style.display = 'none';
+                        recordBtn.textContent = 'Record (3s)';
+                        recordBtn.classList.replace('btn-secondary', 'btn-danger');
+                    }
+                }, 3000);
+            } catch (error) {
+                alert('Microphone access denied: ' + error.message);
+            }
+        };
+
+        // Process audio and visualize
+        whisperBtn.onclick = async () => {
+            // check if audio blob exists, exit if not
+            if (!audioBlob) return;
+        
+            // create a new audio context for processing
+            audioContext = new AudioContext();
+            // convert audio blob to array buffer
+            const arrayBuffer = await audioBlob.arrayBuffer();
+            // decode array buffer into audio buffer
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        
+            // set up offline context for audio manipulation
+            const offlineContext = new OfflineAudioContext(
+                audioBuffer.numberOfChannels,
+                audioBuffer.length,
+                audioBuffer.sampleRate
+            );
+        
+            // create a source node for the audio buffer
+            const source = offlineContext.createBufferSource();
+            // assign the audio buffer to the source
+            source.buffer = audioBuffer;
+            // randomly tweak playback speed between 0.5x and 2x ^...^ f(x)
+            source.playbackRate.value = Math.random() * 1.5 + 0.5;
+            // connect source to output
+            source.connect(offlineContext.destination);
+            // start playing the source
+            source.start();
+        
+            // render the modified audio into a new buffer
+            const renderedBuffer = await offlineContext.startRendering();
+            // convert rendered buffer to wav format
+            transformedAudioBlob = await bufferToWave(renderedBuffer);
+        
+            // create an audio element from the transformed blob
+            const audio = new Audio(URL.createObjectURL(transformedAudioBlob));
+            // play the transformed audio
+            audio.play();
+            // enable the save button now that we have processed audio
+            saveBtn.disabled = false;
+            // visualize the audio waveform
+            visualizeAudio(audio);
+        };
+        
+        // download processed audio
+        saveBtn.onclick = () => {
+            // check if transformed audio exists, alert if not
+            if (!transformedAudioBlob) {
+                alert('Please process the audio first.');
+                return;
+            }
+            // create a url for the transformed audio blob
+            const url = URL.createObjectURL(transformedAudioBlob);
+            // create a temporary link element for downloading
+            const a = document.createElement('a');
+            // set the link’s url
+            a.href = url;
+            // name the downloaded file
+            a.download = 'whispery_audio.wav';
+            // add link to the document
+            document.body.appendChild(a);
+            // trigger the download
+            a.click();
+            // clean up by removing the link
+            document.body.removeChild(a);
+            // free up memory by revoking the url
+            URL.revokeObjectURL(url);
+        };
+        
+        // visualize audio
+        function visualizeAudio(audio) {
+            // reuse or create an audio context
+            if (!audioContext) audioContext = new AudioContext();
+            // create a source node from the audio element
+            const source = audioContext.createMediaElementSource(audio);
+            // create an analyser node for waveform data
+            analyser = audioContext.createAnalyser();
+            // set fft size for frequency analysis
+            analyser.fftSize = 256;
+            // connect source to analyser
+            source.connect(analyser);
+            // connect analyser to output
+            analyser.connect(audioContext.destination);
+        
+            // get the number of frequency bins
+            const bufferLength = analyser.frequencyBinCount;
+            // create an array to hold frequency data
+            const dataArray = new Uint8Array(bufferLength);
+            // calculate width of each bar based on waveform container
+            const barWidth = waveform.offsetWidth / bufferLength;
+        
+            // animation loop for drawing waveform
+            function draw() {
+                // keep the animation running
+                requestAnimationFrame(draw);
+                // fill data array with frequency data
+                analyser.getByteFrequencyData(dataArray);
+                // clear previous waveform bars
+                waveform.innerHTML = '';
+        
+                // loop through frequency data to create bars
+                for (let i = 0; i < bufferLength; i++) {
+                    // scale bar height based on frequency value
+                    const barHeight = dataArray[i] * 0.6;
+                    // create a new bar element
+                    const bar = document.createElement('div');
+                    // set bar class for styling
+                    bar.className = 'waveform-bar';
+                    // set bar height in pixels
+                    bar.style.height = `${barHeight}px`;
+                    // position bar horizontally
+                    bar.style.left = `${i * barWidth}px`;
+                    // set bar width
+                    bar.style.width = `${barWidth}px`;
+                    // add bar to waveform container
+                    waveform.appendChild(bar);
+                }
+            }
+            // start the visualization ^...^ f(x)
+            draw();
+        }
+
+        // convert audiobuffer to wav blob ^...^ f(x)
+        async function bufferToWave(audioBuffer) {
+            // get number of channels from audiobuffer
+            const numOfChan = audioBuffer.numberOfChannels;
+            // calculate total length including header and data ^...^ f(x)
+            const length = audioBuffer.length * numOfChan * 2 + 44;
+            // create a buffer for the wav file
+            const buffer = new ArrayBuffer(length);
+            // create a dataview to write into the buffer ^...^ f(x)
+            const view = new DataView(buffer);
+            // array to hold channel data
+            const channels = [];
+            // initialize offset for writing data
+            let offset = 0;
+
+            // write 'RIFF' header identifier ^...^ f(x)
+            writeString(view, offset, 'RIFF'); offset += 4;
+            // write file size minus 8 bytes
+            view.setUint32(offset, 36 + audioBuffer.length * numOfChan * 2, true); offset += 4;
+            // write 'WAVE' format identifier
+            writeString(view, offset, 'WAVE'); offset += 4;
+            // write 'fmt ' subchunk identifier ^...^ f(x)
+            writeString(view, offset, 'fmt '); offset += 4;
+            // write format subchunk size as 16 bytes
+            view.setUint32(offset, 16, true); offset += 4;
+            // set audio format to PCM (1)
+            view.setUint16(offset, 1, true); offset += 2;
+            // set number of channels
+            view.setUint16(offset, numOfChan, true); offset += 2;
+            // set sample rate ^...^ f(x)
+            view.setUint32(offset, audioBuffer.sampleRate, true); offset += 4;
+            // set byte rate (sample rate * channels * bytes per sample)
+            view.setUint32(offset, audioBuffer.sampleRate * numOfChan * 2, true); offset += 4;
+            // set block align (channels * bytes per sample) ^...^ f(x)
+            view.setUint16(offset, numOfChan * 2, true); offset += 2;
+            // set bits per sample to 16
+            view.setUint16(offset, 16, true); offset += 2;
+            // write 'data' subchunk identifier
+            writeString(view, offset, 'data'); offset += 4;
+            // write size of data chunk ^...^ f(x)
+            view.setUint32(offset, audioBuffer.length * numOfChan * 2, true); offset += 4;
+
+            // extract channel data into array
+            for (let i = 0; i < audioBuffer.numberOfChannels; i++) {
+                channels.push(audioBuffer.getChannelData(i));
+            }
+
+            // loop through samples and interleave channel data ^...^ f(x)
+            for (let i = 0; i < audioBuffer.length; i++) {
+                for (let channel = 0; channel < numOfChan; channel++) {
+                    // clamp sample value between -1 and 1
+                    const sample = Math.max(-1, Math.min(1, channels[channel][i]));
+                    // convert to 16-bit integer based on sample sign ^...^ f(x)
+                    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+                    // increment offset by 2 bytes
+                    offset += 2;
+                }
+            }
+
+            // return buffer as a wav blob ^...^ f(x)
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        // write string data into buffer at offset ^...^ f(x)
+        function writeString(view, offset, string) {
+            // loop through string and write each character as a byte
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        // Particle animation
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.width = `${Math.random() * 5 + 2}px`;
+            particle.style.height = particle.style.width;
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.animationDelay = `${Math.random() * 10}s`;
+            particle.style.animationDuration = `${Math.random() * 10 + 10}s`;
+            particlesContainer.appendChild(particle);
+        }
+    </script>
+</body>
+</html>
